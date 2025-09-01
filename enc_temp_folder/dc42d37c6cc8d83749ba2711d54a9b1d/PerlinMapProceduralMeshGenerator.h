@@ -86,9 +86,6 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Terrain")
     void ModifyTerrainAt(FVector WorldLocation, float Radius, float DeltaHeight);
 
-    UFUNCTION(BlueprintCallable, Category = "Terrain")
-    void LevelTerrainAt(FVector WorldLocation, float Radius, float TargetHeight);
-
     // ISMs separados
     UInstancedStaticMeshComponent* TerrainISM;
     UInstancedStaticMeshComponent* TreeISM;

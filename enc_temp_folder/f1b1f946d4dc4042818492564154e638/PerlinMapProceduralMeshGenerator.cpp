@@ -192,38 +192,9 @@ void APerlinMapProceduralMeshGenerator::ModifyTerrainAt(FVector WorldLocation, f
         TArray<FProcMeshTangent>()
     );
 
-}
+    // Para cavar
+    //ModifyTerrainAt(HitLocation, 200.0f, -100.0f);
 
-void APerlinMapProceduralMeshGenerator::LevelTerrainAt(FVector WorldLocation, float Radius, float TargetHeight)
-{
-    if (TerrainVertices.Num() == 0) return;
-
-    FVector LocalLocation = ProceduralMesh->GetComponentTransform().InverseTransformPosition(WorldLocation);
-
-    for (int32 i = 0; i < TerrainVertices.Num(); ++i)
-    {
-        float Dist = FVector2D::Distance(
-            FVector2D(TerrainVertices[i].X, TerrainVertices[i].Y),
-            FVector2D(LocalLocation.X, LocalLocation.Y)
-        );
-
-        if (Dist <= Radius)
-        {
-            // Aplicar falloff para suavizar a transição
-            float Falloff = 1.0f - (Dist / Radius);
-
-            // Interpola a altura atual até o valor desejado
-            TerrainVertices[i].Z = FMath::Lerp(TerrainVertices[i].Z, TargetHeight, Falloff);
-        }
-    }
-
-    // Atualiza a mesh
-    ProceduralMesh->UpdateMeshSection_LinearColor(
-        0,
-        TerrainVertices,
-        TArray<FVector>(),     // Normals (opcional)
-        TArray<FVector2D>(),   // UVs (opcional)
-        TArray<FLinearColor>(),
-        TArray<FProcMeshTangent>()
-    );
+    // Para adicionar terra
+    //ModifyTerrainAt(HitLocation, 200.0f, +100.0f);
 }
