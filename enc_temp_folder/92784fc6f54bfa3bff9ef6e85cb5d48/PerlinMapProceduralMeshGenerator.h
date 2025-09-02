@@ -86,15 +86,38 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Terrain")
     void ModifyTerrainAt(FVector WorldLocation, float Radius, float DeltaHeight);
 
+    UFUNCTION(BlueprintCallable, Category = "Terrain")
+    void LevelTerrainAt(FVector WorldLocation, float Radius, float TargetHeight);
+
+    UFUNCTION(BlueprintCallable, Category = "Terrain")
+    void AddTributaryAt(FVector StartLocation);
+
+    UFUNCTION(BlueprintCallable, Category = "Terrain")
+    void SimulateErosion(int32 NumIterations, float RainAmount, float ErosionStrength);
+
+    UFUNCTION(BlueprintCallable)
+    void SimulateErosionAt(FVector WorldLocation, float Radius, int32 NumIterations, float RainAmount, float ErosionStrength);
+
+
+
     // ISMs separados
     UInstancedStaticMeshComponent* TerrainISM;
     UInstancedStaticMeshComponent* TreeISM;
     UInstancedStaticMeshComponent* WaterISM;
+
+    TArray<FVector2D> MainRiverPath;
+    TArray<TArray<FVector2D>> AllRiverPaths;
+
 
 private:
     UInstancedStaticMeshComponent* InstancedMeshComp;
 
     void GenerateMap();
     float GeneratePerlinNoise(float X, float Y, FRandomStream& RandStream);
+    void CarveRiver(const FVector2D& Start, const FVector2D& End, float Width, float Depth);
+    TArray<FVector2D> GenerateCurvedRiverPath(int32 NumPoints, FVector2D Start, FVector2D End, float Amplitude, float Frequency);
+    void CarveCurvedRiver(const TArray<FVector2D>& RiverPath, float Width, float Depth);
+
+
 
 };
