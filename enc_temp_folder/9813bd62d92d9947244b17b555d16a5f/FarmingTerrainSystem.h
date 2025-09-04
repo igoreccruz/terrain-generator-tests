@@ -15,8 +15,7 @@ enum class ETileState : uint8
     Plowed     UMETA(DisplayName = "Plowed"),
     Planted    UMETA(DisplayName = "Planted"),
     Grown      UMETA(DisplayName = "Grown"),
-    Harvested  UMETA(DisplayName = "Harvested"),
-    Invalid    UMETA(DisplayName = "Invalid")
+    Harvested  UMETA(DisplayName = "Harvested")
 };
 
 UCLASS()
@@ -43,9 +42,6 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grid")
     float TileSpacing = 10.f;
-
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Collision")
-    class UBoxComponent* CollisionBox;
 
     // Terrain tile class
     UPROPERTY(EditDefaultsOnly, Category = "Spawning")
@@ -82,7 +78,6 @@ public:
 
     // Core systems
     void InitializeGrid();
-    void UpdateCollisionBox();
     void UpdateTileVisual(FIntPoint Tile, ETileState NewState);
 
     // Grid helpers
@@ -93,9 +88,6 @@ public:
     bool IsValidTile(int32 X, int32 Y) const;
 
     // Farming actions
-    UFUNCTION(BlueprintCallable, Category = "Farming")
-    ETileState GetTileStateAtLocation(FVector WorldLocation) const;
-
     UFUNCTION(BlueprintCallable, Category = "Farming")
     void PlowTileAt(FVector WorldLocation);
 

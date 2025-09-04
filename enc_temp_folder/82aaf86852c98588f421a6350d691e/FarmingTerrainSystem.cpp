@@ -2,7 +2,6 @@
 #include "Components/InstancedStaticMeshComponent.h"
 #include "ACropActor.h"
 #include "TerrainActor.h"
-#include "Components/BoxComponent.h"
 
 // Sets default values
 AFarmingTerrainSystem::AFarmingTerrainSystem()
@@ -14,21 +13,12 @@ AFarmingTerrainSystem::AFarmingTerrainSystem()
     CropInstances = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("CropInstances"));
     CropInstances->SetupAttachment(RootComponent);
     CropInstances->SetFlags(RF_Transactional);
-
-    CollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionBox"));
-    CollisionBox->SetupAttachment(RootComponent);
-    CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-    CollisionBox->SetCollisionObjectType(ECC_WorldDynamic);
-    CollisionBox->SetCollisionResponseToAllChannels(ECR_Ignore);
-    CollisionBox->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
-    CollisionBox->SetHiddenInGame(true);
 }
 
 void AFarmingTerrainSystem::BeginPlay()
 {
     Super::BeginPlay();
     InitializeGrid();
-    UpdateCollisionBox();
 }
 
 void AFarmingTerrainSystem::InitializeGrid()
@@ -62,18 +52,6 @@ void AFarmingTerrainSystem::InitializeGrid()
     }
 }
 
-void AFarmingTerrainSystem::UpdateCollisionBox()
-{
-    float TotalWidth = GridWidth * (TileSize + TileSpacing);
-    float TotalHeight = GridHeight * (TileSize + TileSpacing);
-
-    FVector BoxExtent = FVector(TotalWidth / 2.0f, TotalHeight / 2.0f, 10.f); // Z = altura da colisão
-    FVector BoxCenter = FVector(TotalWidth / 2.0f, TotalHeight / 2.0f, 0.f);
-
-    CollisionBox->SetBoxExtent(BoxExtent);
-    CollisionBox->SetRelativeLocation(BoxCenter);
-}
-
 int32 AFarmingTerrainSystem::GetTileIndex(int32 X, int32 Y) const
 {
     return Y * GridWidth + X;
@@ -104,17 +82,6 @@ FIntPoint AFarmingTerrainSystem::GetTileFromWorldLocation(FVector WorldLocation)
     int32 X = FMath::FloorToInt(Local.X / (TileSize + TileSpacing));
     int32 Y = FMath::FloorToInt(Local.Y / (TileSize + TileSpacing));
     return FIntPoint(X, Y);
-}
-
-ETileState AFarmingTerrainSystem::GetTileStateAtLocation(FVector WorldLocation) const
-{
-    FIntPoint TileCoord = GetTileFromWorldLocation(WorldLocation);
-
-    if (!IsValidTile(TileCoord.X, TileCoord.Y)) return ETileState::Invalid;
-
-    if (const ETileState* FoundState = TileStates.Find(TileCoord)) return *FoundState;
-
-    return ETileState::Empty;
 }
 
 void AFarmingTerrainSystem::PlowTileAt(FVector WorldLocation)
