@@ -4,40 +4,33 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "ProceduralMeshComponent.h"
 #include "FarmingTerrainSystem.generated.h"
+
+class ATerrainActor;
 
 UENUM(BlueprintType)
 enum class ETileState : uint8
 {
-	Empty      UMETA(DisplayName = "Empty"),
-	Plowed     UMETA(DisplayName = "Plowed"),
-	Planted    UMETA(DisplayName = "Planted"),
-	Grown      UMETA(DisplayName = "Grown"),
-	Harvested  UMETA(DisplayName = "Harvested")
+    Empty      UMETA(DisplayName = "Empty"),
+    Plowed     UMETA(DisplayName = "Plowed"),
+    Planted    UMETA(DisplayName = "Planted"),
+    Grown      UMETA(DisplayName = "Grown"),
+    Harvested  UMETA(DisplayName = "Harvested")
 };
 
 UCLASS()
 class TESTES_API AFarmingTerrainSystem : public AActor
 {
-	GENERATED_BODY()
-	
-public:	
-	// Sets default values for this actor's properties
-	AFarmingTerrainSystem();
+    GENERATED_BODY()
+
+public:
+    AFarmingTerrainSystem();
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+    virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-    void InitializeGrid();
-
-    void GenerateTerrain();
-
+public:
+    // Grid configuration
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grid")
     int32 GridWidth = 50;
 
@@ -47,21 +40,29 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grid")
     float TileSize = 100.f;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grid")
+    float TileSpacing = 10.f;
+
+    // Terrain tile class
+    UPROPERTY(EditDefaultsOnly, Category = "Spawning")
+    TSubclassOf<ATerrainActor> TerrainActorClass;
+
+    // Prototypes de atores para os estados
+    UPROPERTY(EditDefaultsOnly, Category = "Terrain Actors")
+    TSubclassOf<ATerrainActor> EmptyActorClass;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Terrain Actors")
+    TSubclassOf<ATerrainActor> PlowedActorClass;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Terrain Actors")
+    TSubclassOf<ATerrainActor> PlantedActorClass;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Terrain Actors")
+    TSubclassOf<ATerrainActor> GrownActorClass;
+
+    // Crop instancing (optional visual mesh)
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Instancing")
     UInstancedStaticMeshComponent* CropInstances;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Meshes")
-    UStaticMesh* GrownMesh;
-
-    // Terrain Mesh
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Farming")
-    UProceduralMeshComponent* TerrainMesh;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Farming")
-    UMaterialInterface* TerrainMaterial;
-
-    UPROPERTY()
-    TMap<FIntPoint, ETileState> TileStates;
 
     UPROPERTY(EditDefaultsOnly, Category = "Farming")
     TSubclassOf<AActor> CropActorClass;
@@ -69,15 +70,21 @@ public:
     UPROPERTY(EditDefaultsOnly, Category = "Farming")
     UStaticMesh* CropMesh;
 
-    // Mapeamento de plantações por tile
-    UPROPERTY()
+    // Internal data
+    TMap<FIntPoint, ETileState> TileStates;
+    TMap<FIntPoint, ATerrainActor*> TileToTerrainActorMap;
     TMap<int32, AActor*> PlantedCrops;
+    TMap<int32, int32> TileToInstanceMap;
 
-    //TArray<ETileState> TileStates;
+    // Core systems
+    void InitializeGrid();
+    void UpdateTileVisual(FIntPoint Tile, ETileState NewState);
 
-    // Grid utils
+    // Grid helpers
     int32 GetTileIndex(int32 X, int32 Y) const;
     FVector GetWorldLocationFromTile(int32 X, int32 Y) const;
+    FVector GetCenteredWorldLocationFromTile(int32 X, int32 Y) const;
+    FIntPoint GetTileFromWorldLocation(FVector WorldLocation) const;
     bool IsValidTile(int32 X, int32 Y) const;
 
     // Farming actions
@@ -87,18 +94,12 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Farming")
     void PlantSeedAt(FVector WorldLocation);
 
-    UFUNCTION(BlueprintCallable)
+    UFUNCTION(BlueprintCallable, Category = "Farming")
     void GrowCrop(int32 X, int32 Y);
 
-    UFUNCTION(BlueprintCallable)
+    UFUNCTION(BlueprintCallable, Category = "Farming")
     void HarvestCrop(int32 X, int32 Y);
 
-    void UpdateCropInstance(int32 Index, UStaticMesh* NewMesh);
-    void RemoveCropInstance(int32 Index);
-    FIntPoint GetTileFromWorldLocation(FVector WorldLocation) const;
-
-
-private:
-    TMap<int32, int32> TileToInstanceMap;
-
+    void UpdateCropInstance(int32 TileIndex, UStaticMesh* NewMesh);
+    void RemoveCropInstance(int32 TileIndex);
 };
